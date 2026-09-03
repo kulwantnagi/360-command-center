@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join the team · 360° Command Center</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2307070F%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%279%27 fill=%27none%27 stroke=%27%23E9F709%27 stroke-width=%273%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%273%27 fill=%27%23E9F709%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07070F;color:#fff;font-family:"DM Sans",system-ui,sans-serif;position:relative;overflow:hidden}
+  body::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(233,247,9,.22),transparent 65%);top:-160px;right:-120px;pointer-events:none}
+  .box{width:min(420px,92vw);background:#0E0E1A;border:1px solid #1F1F2E;border-radius:16px;padding:32px 30px;position:relative;display:flex;flex-direction:column;gap:12px}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#E9F709}
+  h1{font-family:Unbounded,sans-serif;font-weight:900;font-size:24px;line-height:1.05;margin:8px 0 4px}
+  p{margin:0;color:rgba(255,255,255,.7);font-size:14px;line-height:1.5}
+  label{display:block;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:6px}
+  input{width:100%;background:#07070F;border:1px solid #2C2C3E;border-radius:8px;padding:11px 12px;color:#fff;font:inherit;font-size:15px}
+  input[readonly]{color:rgba(255,255,255,.55)}
+  input:focus{outline:2px solid #E9F709;outline-offset:1px;border-color:#E9F709}
+  button{width:100%;margin-top:6px;background:#E9F709;color:#07070F;border:0;border-radius:8px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+  button:hover{filter:brightness(.95)}
+  button:disabled{opacity:.5;cursor:default}
+  .msg{display:none;border-radius:8px;padding:9px 12px;font-size:13.5px}
+  .msg.err{display:block;background:rgba(240,101,90,.14);color:#F0655A}
+  .role{display:inline-block;background:rgba(233,247,9,.16);color:#E9F709;font-weight:700;font-size:12px;padding:2px 9px;border-radius:99px;letter-spacing:.3px}
+  a{color:#E9F709}
+</style>
+</head>
+<body>
+  <form class="box" id="f">
+    <div>
+      <div class="eyebrow">AI Growth Skool</div>
+      <h1>Join the team</h1>
+      <p id="intro">Checking your invite…</p>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div id="fields" hidden>
+      <div style="margin-bottom:12px"><label for="email">Email</label><input id="email" type="email" readonly></div>
+      <div style="margin-bottom:12px"><label for="name">Your name</label><input id="name" type="text" autocomplete="name" required maxlength="80"></div>
+      <div style="margin-bottom:12px"><label for="pw">Choose a password (8+ characters)</label><input id="pw" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div><label for="pw2">Repeat password</label><input id="pw2" type="password" autocomplete="new-password" minlength="8" required></div>
+      <button type="submit" id="go">Create my account</button>
+    </div>
+  </form>
+  <script>
+    const token = location.pathname.split('/').pop();
+    const $ = (s) => document.querySelector(s);
+    const show = (t, cls) => { const m = $('#msg'); m.textContent = t; m.className = 'msg ' + (cls || ''); };
+    fetch('/api/invite/' + encodeURIComponent(token), { headers: { Accept: 'application/json' } })
+      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error); return j; })
+      .then((j) => {
+        $('#intro').innerHTML = (j.invitedBy ? `<b>${j.invitedBy}</b> invited you` : 'You were invited') + ` to the 360° Command Center as <span class="role">${j.role}</span>. Set a password to get in.`;
+        $('#email').value = j.email; $('#fields').hidden = false; $('#name').focus();
+      })
+      .catch((e) => { $('#intro').textContent = ''; show(e.message + ' You can also <a href="/login">sign in</a> if you already have an account.'); $('#msg').innerHTML = e.message + ' You can also <a href="/login">sign in</a> if you already have an account.'; });
+    $('#f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if ($('#pw').value !== $('#pw2').value) return show('Passwords do not match', 'err');
+      $('#go').disabled = true; show('', '');
+      try {
+        const r = await fetch('/api/invite/' + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ name: $('#name').value, password: $('#pw').value }) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Could not create the account');
+        location.href = '/';
+      } catch (err) { show(err.message, 'err'); $('#go').disabled = false; }
+    });
+  </script>
+</body>
+</html>

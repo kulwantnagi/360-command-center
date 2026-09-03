@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kulwant 360 Command Center</title>
+</head>
+<body style="margin:0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700&display=swap">
+<style>
+:root{
+  --bg:#F5F8F0; --panel:#FFFFFF; --panel2:#ECEFE6; --line:#D9DDD0; --line2:#C6CBBB;
+  --ink:#0A0A14; --ink2:#4A4D52; --ink3:#7C8085;
+  --accent:#E9F709; --accent-ink:#4F5600; --accent-soft:rgba(233,247,9,.28); --accent-glow:rgba(233,247,9,.18);
+  --on-accent:#07070F; --dark:#07070F; --dark2:#0A0A14;
+  --good:#1F8A4C; --good-bg:rgba(31,138,76,.14); --warn:#B6730A; --warn-bg:rgba(182,115,10,.14); --bad:#C0392B; --bad-bg:rgba(192,57,43,.14);
+  --shadow:0 8px 28px rgba(10,10,20,.08);
+  --r:12px; --rs:8px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#07070F; --panel:#0E0E1A; --panel2:#141422; --line:#1F1F2E; --line2:#2C2C3E;
+    --ink:#FFFFFF; --ink2:rgba(255,255,255,.72); --ink3:rgba(255,255,255,.46);
+    --accent-ink:#E9F709; --accent-soft:rgba(233,247,9,.16); --accent-glow:rgba(233,247,9,.14);
+    --good:#4CCB7F; --good-bg:rgba(76,203,127,.14); --warn:#F0B54A; --warn-bg:rgba(240,181,74,.14); --bad:#F0655A; --bad-bg:rgba(240,101,90,.14);
+    --shadow:0 12px 40px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#07070F; --panel:#0E0E1A; --panel2:#141422; --line:#1F1F2E; --line2:#2C2C3E;
+  --ink:#FFFFFF; --ink2:rgba(255,255,255,.72); --ink3:rgba(255,255,255,.46);
+  --accent-ink:#E9F709; --accent-soft:rgba(233,247,9,.16); --accent-glow:rgba(233,247,9,.14);
+  --good:#4CCB7F; --good-bg:rgba(76,203,127,.14); --warn:#F0B54A; --warn-bg:rgba(240,181,74,.14); --bad:#F0655A; --bad-bg:rgba(240,101,90,.14);
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent-ink)}
+.num{font-variant-numeric:tabular-nums}
+::selection{background:var(--accent);color:var(--on-accent)}
+
+/* shell */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.rail{background:var(--dark);color:#fff;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;border-right:1px solid #1F1F2E}
+.brand{padding:4px 10px 18px}
+.brand .eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
+.brand h1{font-family:Unbounded,"DM Sans",sans-serif;font-weight:900;font-size:17px;line-height:1.05;margin-top:6px;color:#fff}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:0;padding:9px 10px;border-radius:var(--rs);color:rgba(255,255,255,.72);cursor:pointer;font-weight:500}
+.nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav button.active{background:var(--accent);color:#07070F;font-weight:700}
+.nav button .ic{width:22px;height:22px;display:grid;place-items:center;flex:none}
+.nav button .ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button .badge{margin-left:auto;font-size:11px;font-weight:700;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:99px}
+.nav button.active .badge{background:rgba(7,7,15,.18)}
+.rail-foot{padding:10px;font-size:12px;color:rgba(255,255,255,.45);display:flex;flex-direction:column;gap:8px}
+.rail-foot .theme{display:flex;gap:4px}
+.rail-foot .theme button{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);padding:5px;border-radius:6px;cursor:pointer;font-size:12px}
+.rail-foot .theme button.on{background:rgba(233,247,9,.15);color:var(--accent);border-color:rgba(233,247,9,.4)}
+
+.main{padding:28px 32px 60px;min-width:0}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap}
+.topbar .eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent-ink)}
+.topbar h2{font-family:Unbounded,"DM Sans",sans-serif;font-weight:900;font-size:30px;line-height:1;margin-top:6px;letter-spacing:-.01em}
+.topbar .sub{color:var(--ink2);margin-top:8px;max-width:60ch}
+.topbar .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* controls */
+.btn{background:var(--panel);border:1px solid var(--line2);padding:8px 14px;border-radius:var(--rs);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.btn:hover{border-color:var(--ink3)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700}
+.btn.primary:hover{filter:brightness(.95)}
+.btn.small{padding:5px 10px;font-size:13px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink2)}
+.btn.ghost:hover{background:var(--panel2);border-color:transparent}
+.btn.danger{color:var(--bad)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:var(--rs);padding:9px 11px;color:var(--ink)}
+textarea{min-height:90px;resize:vertical;line-height:1.5}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink2)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.span2{grid-column:span 2}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.panel.dark{background:var(--dark2);color:#fff;border-color:#1F1F2E;position:relative;overflow:hidden}
+.panel.dark::before{content:"";position:absolute;inset:auto -60px -80px auto;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(233,247,9,.22),transparent 65%);pointer-events:none}
+.panel h3{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.panel.dark h3{color:var(--accent)}
+.panel .h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.panel .h h3{margin:0}
+.muted{color:var(--ink3);font-size:13px}
+.hint{color:var(--ink2);font-size:13px}
+.big{font-family:Unbounded,"DM Sans",sans-serif;font-weight:900;font-size:44px;line-height:1;letter-spacing:-.02em}
+.big.sm{font-size:30px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid transparent;letter-spacing:.3px;white-space:nowrap}
+.pill.p{background:var(--panel2);color:var(--ink2);border-color:var(--line)}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.pill.ex{background:transparent;border:1px dashed var(--line2);color:var(--ink3)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.tbl{overflow-x:auto}
+td .btn.small{padding:3px 8px}
+
+/* checklist */
+.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.check li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.check li:last-child{border-bottom:0}
+.check li button.box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--line2);background:transparent;cursor:pointer;margin-top:2px;display:grid;place-items:center}
+.check li button.box svg{width:13px;height:13px;stroke:var(--on-accent);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.check li.done button.box{background:var(--accent);border-color:var(--accent)}
+.check li.done button.box svg{opacity:1}
+.check li.done .t{text-decoration:line-through;color:var(--ink3)}
+.check li .t{flex:1}
+.check li .t small{display:block;color:var(--ink3);font-size:12.5px}
+.plat{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3)}
+.plat i{width:8px;height:8px;border-radius:2px;background:var(--accent);display:inline-block}
+.prog{height:8px;border-radius:99px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.prog>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.panel.dark .prog{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.08)}
+
+/* week scorecard */
+.week7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week7 .d{border:1px solid var(--line);border-radius:var(--rs);padding:8px 6px;text-align:center;background:var(--panel2)}
+.week7 .d.today{border-color:var(--accent-ink)}
+.week7 .d .l{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.week7 .d .v{font-family:Unbounded,sans-serif;font-weight:700;font-size:15px;margin-top:4px}
+.week7 .d .bar{height:4px;border-radius:2px;background:var(--line);margin-top:6px;overflow:hidden}
+.week7 .d .bar>i{display:block;height:100%;background:var(--accent)}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:120px repeat(7,minmax(130px,1fr));border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel);min-width:1030px}
+.cal .hd{background:var(--panel2);padding:10px 8px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:var(--ink3);border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.cal .hd b{display:block;color:var(--ink);font-family:Unbounded,sans-serif;font-size:14px;letter-spacing:0;text-transform:none;margin-top:2px}
+.cal .hd.today{color:var(--accent-ink)}
+.cal .hd.today b{color:var(--accent-ink)}
+.cal .rl{padding:10px 10px;font-weight:700;font-size:13px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:var(--panel2);display:flex;flex-direction:column;gap:2px}
+.cal .rl small{font-weight:500;color:var(--ink3);font-size:11.5px}
+.cal .cell{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;min-height:74px;display:flex;flex-direction:column;gap:4px;position:relative}
+.cal .cell.today{background:var(--accent-glow)}
+.cal .cell .ghost{font-size:11.5px;color:var(--ink3);border:1px dashed var(--line2);border-radius:6px;padding:3px 6px;cursor:pointer}
+.cal .cell .ghost:hover{border-color:var(--accent-ink);color:var(--accent-ink)}
+.cal .cell .chip{font-size:12px;border-radius:6px;padding:4px 7px;background:var(--panel2);border-left:3px solid var(--line2);cursor:pointer;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+.cal .cell .chip.planned{border-left-color:var(--ink3)}
+.cal .cell .chip.drafted{border-left-color:var(--warn)}
+.cal .cell .chip.scheduled{border-left-color:var(--accent-ink)}
+.cal .cell .chip.posted{border-left-color:var(--good);opacity:.7;text-decoration:line-through}
+.cal .cell .add{position:absolute;right:4px;bottom:4px;width:20px;height:20px;border-radius:5px;border:1px solid var(--line2);background:var(--panel);color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;display:grid;place-items:center;opacity:0}
+.cal .cell:hover .add{opacity:1}
+
+/* kanban */
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;overflow-x:auto}
+.col{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.col .ch{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);padding:4px 4px 6px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.card .ti{font-weight:600;line-height:1.3}
+.card .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card .acts{display:flex;gap:4px;justify-content:flex-end;margin-top:2px}
+.card .acts button{background:transparent;border:1px solid var(--line);border-radius:5px;padding:3px 7px;font-size:12px;cursor:pointer;color:var(--ink2)}
+.card .acts button:hover{border-color:var(--ink3);color:var(--ink)}
+
+/* x slots */
+.slot{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--panel)}
+.slot.posted{border-color:var(--good);background:var(--good-bg)}
+.slot .sh{display:flex;justify-content:space-between;align-items:center}
+.slot .sh b{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink)}
+.slot textarea{min-height:88px}
+.slot .cnt{font-size:12px;color:var(--ink3)}
+.slot .cnt.over{color:var(--bad);font-weight:700}
+.counter{display:flex;align-items:center;gap:12px}
+.counter button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:var(--panel);cursor:pointer;font-size:18px}
+
+/* stages */
+.stages{display:flex;gap:4px;align-items:center}
+.stages span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.stages span.on{background:var(--accent)}
+
+/* sparkline */
+.spark{width:100%;height:84px;display:block}
+.spark .grid{stroke:var(--line);stroke-width:1}
+.spark .area{fill:var(--accent);fill-opacity:.14}
+.spark .line{stroke:var(--accent-ink);stroke-width:2;fill:none}
+.spark .pt{fill:var(--accent);stroke:var(--panel);stroke-width:2}
+.spark .hit{fill:transparent}
+.spark .vline{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 3;opacity:0}
+.metric-card{display:flex;flex-direction:column;gap:6px;position:relative}
+.metric-card .top{display:flex;justify-content:space-between;align-items:baseline}
+.metric-card .top .v{font-family:Unbounded,sans-serif;font-weight:700;font-size:22px}
+.metric-card .delta{font-size:12.5px;font-weight:600}
+.metric-card .delta.up{color:var(--good)}
+.metric-card .delta.dn{color:var(--bad)}
+.tip{position:absolute;background:var(--dark2);color:#fff;font-size:12px;padding:5px 8px;border-radius:6px;pointer-events:none;transform:translate(-50%,-110%);white-space:nowrap;display:none;z-index:5;border:1px solid #2C2C3E}
+
+/* playbook */
+.pb{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.pb .panel dl{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;margin:0;font-size:14px}
+.pb .panel dt{color:var(--ink3);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding-top:2px}
+.pb .panel dd{margin:0}
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.flow .node{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:var(--rs);padding:10px 12px;min-width:150px;flex:1}
+.flow .node b{display:block;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:4px}
+.flow .node.src{background:var(--dark2);color:#fff;border-color:#2C2C3E}
+.flow .node.src b{color:var(--accent)}
+.flow .arrow{display:grid;place-items:center;padding:0 8px;color:rgba(255,255,255,.55);font-size:18px}
+.phase{border-left:3px solid var(--accent);padding-left:14px}
+.phase b{font-family:Unbounded,sans-serif;font-size:13px}
+ul.tight{margin:6px 0 0;padding-left:18px;color:var(--ink2);font-size:14px}
+ul.tight li{margin:3px 0}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(7,7,15,.6);display:none;place-items:center;z-index:50;padding:20px}
+.modal-bg.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:16px;width:min(640px,100%);max-height:90vh;overflow:auto;padding:22px 24px;box-shadow:var(--shadow)}
+.modal h3{font-family:Unbounded,sans-serif;font-size:17px;font-weight:700;margin-bottom:14px}
+.modal .fields{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+.modal .fields .w{grid-column:1/-1}
+.modal .foot{display:flex;justify-content:space-between;gap:8px;margin-top:18px}
+.checks{display:flex;gap:8px;flex-wrap:wrap}
+.checks label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line2);border-radius:99px;padding:5px 11px;cursor:pointer;font-size:13px;font-weight:500}
+.checks label:has(input:checked){background:var(--accent-soft);border-color:var(--accent-ink);color:var(--accent-ink)}
+.checks input{accent-color:var(--accent-ink)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark2);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;border:1px solid #2C2C3E;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1}
+.empty{border:1px dashed var(--line2);border-radius:var(--rs);padding:16px;text-align:center;color:var(--ink3);font-size:13.5px}
+
+@media (max-width:980px){
+  .app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}
+  .brand{padding:0 8px;flex-basis:100%}
+  .nav{flex-direction:row;overflow-x:auto;gap:4px;flex-basis:100%}
+  .nav button{white-space:nowrap;width:auto}
+  .nav button .badge{margin-left:4px}
+  .rail-foot{display:none}
+  .main{padding:18px 14px 50px}
+  .g2,.g3,.g4,.g6{grid-template-columns:1fr 1fr}
+  .span2{grid-column:span 2}
+  .modal .fields{grid-template-columns:1fr}
+}
+@media (max-width:600px){ .g2,.g3,.g4,.g6{grid-template-columns:1fr} .span2{grid-column:auto} .topbar h2{font-size:24px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="eyebrow">AI Growth Skool</div>
+      <h1>360° Command Center</h1>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="rail-foot">
+      <div>@kulwantnagi · saved on this device</div>
+      <div class="theme">
+        <button data-theme="system">Auto</button>
+        <button data-theme="dark">Dark</button>
+        <button data-theme="light">Light</button>
+      </div>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ constants ============ */
+const PLATFORMS = {
+  li:{name:'LinkedIn', short:'LI'},
+  ig:{name:'Instagram', short:'IG'},
+  fb:{name:'Facebook', short:'FB'},
+  x:{name:'X', short:'X'},
+  th:{name:'Threads', short:'TH'},
+  nl:{name:'Newsletter', short:'NL'}
+};
+const PLAT_ORDER = ['li','ig','fb','x','th','nl'];
+const POST_TYPES = ['Reel','Carousel','Text post','Image post','Story','Thread','Tweet','Video','Newsletter'];
+const POST_STATUS = ['planned','drafted','scheduled','posted'];
+const IDEA_STAGES = ['idea','drafting','ready','posted'];
+const REEL_STAGES = ['hook','script','shoot','edit','posted'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+/* Cadence: what a marketer would run for this exact mix.
+   day: 0=Sun..6=Sat. nlWeek tasks only show on newsletter weeks. */
+const DAILY_TASKS = [
+  {id:'x-tweets', p:'x', t:'Post 3 tweets on X', s:'Morning news · midday insight · evening question'},
+  {id:'x-replies', p:'x', t:'Reply to 10 accounts on X', s:'Bigger accounts in AI + your students. Add value, not "great post"'},
+  {id:'th-post', p:'th', t:'Post 1 Thread', s:'Take today\'s best tweet, expand it to 3–5 lines'},
+  {id:'ig-story', p:'ig', t:'Instagram story', s:'Behind the scenes, a poll, or repost today\'s reel'},
+  {id:'engage', p:'all', t:'15 min engagement block', s:'Answer comments + DMs on every platform'}
+];
+const WEEKLY_TASKS = {
+  1:[{id:'reel', p:'ig', t:'Publish Reel #1 (Instagram + Facebook)', s:'Tutorial style: one AI graphics trick'},
+     {id:'li-post', p:'li', t:'LinkedIn text post', s:'Lesson or opinion, 150–250 words, hook in line 1'}],
+  2:[{id:'ig-carousel', p:'ig', t:'Instagram carousel', s:'5–7 slides, save-worthy tip list'},
+     {id:'x-chat', p:'x', t:'Join an X chat / Space', s:'See X tab for the chat list'}],
+  3:[{id:'reel', p:'ig', t:'Publish Reel #2 (Instagram + Facebook)', s:'Before/after or myth-busting'},
+     {id:'li-post', p:'li', t:'LinkedIn text post', s:'Story from a student or your own work'},
+     {id:'nl-draft', p:'nl', t:'Draft the newsletter', s:'Collect this fortnight\'s AI news, pick tool + tutorial', nl:true}],
+  4:[{id:'li-carousel', p:'li', t:'LinkedIn carousel (PDF)', s:'Repurpose Tuesday\'s IG carousel'},
+     {id:'x-chat', p:'x', t:'Join an X chat / Space', s:'See X tab for the chat list'},
+     {id:'nl-send', p:'nl', t:'Send the newsletter', s:'Then promote it: tweet + story + LinkedIn comment', nl:true}],
+  5:[{id:'reel', p:'ig', t:'Publish Reel #3 (Instagram + Facebook)', s:'Fast hands-on demo, under 30s'},
+     {id:'li-post', p:'li', t:'LinkedIn text post', s:'Friday: a win, a number, or a lesson'},
+     {id:'metrics', p:'all', t:'Log this week\'s numbers', s:'Growth tab → add a row for this week'}],
+  6:[{id:'reel', p:'ig', t:'Publish Reel #4 (Instagram + Facebook)', s:'Weekend: personal / storytelling'},
+     {id:'batch-shoot', p:'ig', t:'Batch-shoot next week\'s 4 reels', s:'One setup, one outfit, four scripts'}],
+  0:[{id:'plan', p:'all', t:'Plan next week in the Calendar', s:'Every cell should have something'},
+     {id:'batch-tweets', p:'x', t:'Batch-write 21 tweets', s:'Store them in the Tweet bank on the X tab'}]
+};
+const PILLARS = ['AI News & Updates','AI Graphics Tutorials','Prompting Tips','Brand Visuals','AI Video','Behind the Scenes','Student Wins'];
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,9);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`; };
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (d,n) => { const x = parse(typeof d==='string'?d:iso(d)); x.setDate(x.getDate()+n); return iso(x); };
+const today = () => iso(new Date());
+const weekStart = s => { const d = parse(s); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); return iso(d); };
+const fmt = s => { if(!s) return ''; const d = parse(s); return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}); };
+const fmtLong = s => parse(s).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/86400000);
+const nlWeek = (dateStr, anchor) => { const diff = daysBetween(weekStart(anchor), weekStart(dateStr)); return ((diff/7)%2+2)%2 === 0; };
+const clamp = (n,a,b) => Math.max(a, Math.min(b,n));
+
+/* ============ seed ============ */
+function seed(){
+  const t = today();
+  const ws = weekStart(t);
+  // anchor newsletter to the next Thursday from today
+  let anchor = t; while(parse(anchor).getDay() !== 4) anchor = addDays(anchor,1);
+  const ex = true;
+  const ideas = [
+    {id:uid(), title:'Nano Banana 2 vs ChatGPT Image 2.0: which one for brand graphics?', pillar:'AI Graphics Tutorials', stage:'ready', platforms:['ig','li','x','nl'], notes:'Same prompt, both tools, side-by-side. Show where each wins.', ex},
+    {id:uid(), title:'The 3-line brand prompt formula (style + colors + mood)', pillar:'Prompting Tips', stage:'drafting', platforms:['ig','x','th'], notes:'Teach it like a recipe. Hindi/Hinglish VO for the reel.', ex},
+    {id:uid(), title:'Why your AI graphics look "off-brand" (and the fix)', pillar:'Brand Visuals', stage:'idea', platforms:['li','ig'], notes:'Common mistake: no reference image, no hex codes in the prompt.', ex},
+    {id:uid(), title:'This week in AI: 5 updates a social media manager should know', pillar:'AI News & Updates', stage:'idea', platforms:['nl','x','th'], notes:'Pulls from the daily research log.', ex},
+    {id:uid(), title:'Student win: how Priya made 30 ad creatives in one afternoon', pillar:'Student Wins', stage:'idea', platforms:['li','ig','fb'], notes:'Get permission + screenshots first.', ex}
+  ];
+  const posts = [
+    {id:uid(), date:ws, platform:'ig', type:'Reel', title:'Nano Banana 2 vs ChatGPT Image 2.0', status:'posted', ideaId:ideas[0].id, ex},
+    {id:uid(), date:ws, platform:'fb', type:'Reel', title:'Nano Banana 2 vs ChatGPT Image 2.0 (cross-post)', status:'posted', ideaId:ideas[0].id, ex},
+    {id:uid(), date:ws, platform:'li', type:'Text post', title:'I tested both image tools with the same brand prompt…', status:'posted', ideaId:ideas[0].id, ex},
+    {id:uid(), date:addDays(ws,1), platform:'ig', type:'Carousel', title:'3-line brand prompt formula', status:'drafted', ideaId:ideas[1].id, ex},
+    {id:uid(), date:addDays(ws,2), platform:'ig', type:'Reel', title:'Fix your off-brand AI graphics in 20 sec', status:'planned', ideaId:ideas[2].id, ex},
+    {id:uid(), date:addDays(ws,2), platform:'li', type:'Text post', title:'Your AI graphics look off-brand. Here\'s the one-line fix.', status:'planned', ideaId:ideas[2].id, ex},
+    {id:uid(), date:addDays(ws,3), platform:'li', type:'Carousel', title:'3-line brand prompt formula (PDF)', status:'planned', ideaId:ideas[1].id, ex},
+    {id:uid(), date:addDays(ws,4), platform:'ig', type:'Reel', title:'Speed-run: 5 ad creatives in 5 minutes', status:'planned', ex},
+  ];
+  const reels = [
+    {id:uid(), title:'Nano Banana 2 vs ChatGPT Image 2.0', hook:'Same prompt. Two tools. One clear winner for brand graphics.', script:'Show prompt → generate in both → zoom on brand colors → verdict → CTA: newsletter link in bio', stage:'posted', postDate:ws, platforms:['ig','fb'], ex},
+    {id:uid(), title:'Fix your off-brand AI graphics in 20 sec', hook:'Your AI graphics look cheap because of ONE missing line.', script:'Before shot → add hex codes + reference → after shot → "save this"', stage:'edit', postDate:addDays(ws,2), platforms:['ig','fb'], ex},
+    {id:uid(), title:'Speed-run: 5 ad creatives in 5 minutes', hook:'5 ad creatives. 5 minutes. No designer.', script:'Timer on screen, rapid cuts, final grid reveal', stage:'script', postDate:addDays(ws,4), platforms:['ig','fb'], ex},
+    {id:uid(), title:'Why I moved my whole workflow to AI graphics', hook:'I fired my old design process. Here\'s what replaced it.', script:'Personal, talking head, 3 reasons', stage:'hook', postDate:addDays(ws,5), platforms:['ig','fb'], ex},
+  ];
+  const newsletters = [
+    {id:uid(), issue:1, sendDate:anchor, subject:'AI Updates #1: the image tool war just got interesting', status:'drafting',
+     news:'1. Nano Banana 2 update\n2. ChatGPT Image 2.0 brand mode\n3. Meta AI ads change\n4. New Reels editing feature\n5. LinkedIn video push',
+     tool:'Nano Banana 2 — best for consistent brand colors', tutorial:'The 3-line brand prompt formula (with screenshots)', cta:'Reply with your brand colors, I\'ll send a prompt back', subs:'', open:'', ex}
+  ];
+  const xChats = [
+    {id:uid(), name:'Example: weekly AI creators chat', day:'Tue', time:'9:00 PM IST', tag:'#AIChat', notes:'Replace with a real chat you found. Search X for "AI chat" + your niche.', ex},
+    {id:uid(), name:'Example: marketing Twitter Space', day:'Thu', time:'8:30 PM IST', tag:'Space', notes:'Ask one sharp question, then follow the host.', ex}
+  ];
+  const tweets = [
+    {id:uid(), text:'Most "AI graphics look fake" problems are prompt problems. Add your brand hex codes. Add a reference image. Done.', status:'bank', ex},
+    {id:uid(), text:'Tested Nano Banana 2 and ChatGPT Image 2.0 with the same brand prompt today. Full breakdown in Thursday\'s newsletter.', status:'bank', ex},
+    {id:uid(), text:'Social media managers: which takes you longer — writing the caption or making the graphic? Honest answers.', status:'bank', ex}
+  ];
+  // 4 example weeks of numbers so the growth charts show what they do
+  const metrics = [];
+  const base = {ig:4120, fb:2210, li:1830, x:640, th:210, nl:95};
+  for(let i=4;i>=1;i--){
+    const w = addDays(ws, -7*i);
+    const row = {id:uid(), week:w, ex:true};
+    for(const k in base){ row[k] = Math.round(base[k] * (1 - 0.035*i)); }
+    metrics.push(row);
+  }
+  return {
+    v:1, settings:{ startDate:t, nlAnchor:anchor, goalDays:90,
+      goals:{ig:10000, fb:5000, li:5000, x:2500, th:1000, nl:1000},
+      notes:{} },
+    ideas, posts, reels, newsletters, xChats, tweets, metrics,
+    done:{}, xslots:{}, replies:{}, tab:'today', calWeek: ws
+  };
+}
+
+/* ============ state ============ */
+const KEY = 'kn360_v1';
+let S;
+try{ S = JSON.parse(localStorage.getItem(KEY)); }catch(e){ S = null; }
+if(!S || !S.settings){ S = seed(); }
+S.calWeek = S.calWeek || weekStart(today());
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800); }
+
+/* ============ tasks for a day ============ */
+function tasksFor(dateStr){
+  const dow = parse(dateStr).getDay();
+  const isNl = nlWeek(dateStr, S.settings.nlAnchor);
+  const list = [];
+  const hasIssue = S.newsletters.some(n=>n.sendDate===dateStr && n.status!=='sent');
+  for(const t of (WEEKLY_TASKS[dow]||[])){ if(t.nl && !isNl) continue; if(t.id==='nl-send' && hasIssue) continue; list.push({...t, key:'w-'+t.id}); }
+  for(const t of DAILY_TASKS) list.push({...t, key:'d-'+t.id});
+  // scheduled items for that date
+  for(const p of S.posts.filter(p=>p.date===dateStr && p.status!=='posted'))
+    list.push({key:'post-'+p.id, p:p.platform, t:`Publish: ${p.title}`, s:`${p.type} · ${PLATFORMS[p.platform].name} · ${p.status}`, ref:'post', id:p.id});
+  for(const n of S.newsletters.filter(n=>n.sendDate===dateStr && n.status!=='sent'))
+    list.push({key:'nl-'+n.id, p:'nl', t:`Send newsletter issue #${n.issue}`, s:n.subject||'No subject yet', ref:'nl', id:n.id});
+  return list;
+}
+function dayScore(dateStr){
+  const list = tasksFor(dateStr); if(!list.length) return {done:0,total:0,pct:0};
+  const d = S.done[dateStr]||{}; const done = list.filter(t=>d[t.key]).length;
+  return {done, total:list.length, pct:Math.round(done/list.length*100)};
+}
+function streak(){
+  let n=0, d=today();
+  // today counts if complete; otherwise start from yesterday
+  if(dayScore(d).pct < 80) d = addDays(d,-1);
+  while(dayScore(d).total && dayScore(d).pct >= 80){ n++; d = addDays(d,-1); if(n>365) break; }
+  return n;
+}
+
+/* ============ nav ============ */
+const TABS = [
+  ['today','Today','M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z'],
+  ['calendar','Calendar','M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+  ['pipeline','Idea Pipeline','M4 6h16M4 12h10M4 18h6'],
+  ['newsletter','Newsletter','M4 4h16v16H4zM4 7l8 6 8-6'],
+  ['x','X & Threads','M4 4l16 16M20 4L4 20'],
+  ['reels','Reels','M4 5h16v14H4zM4 9h16M4 15h16M9 5v14M15 5v14'],
+  ['growth','Growth','M3 17l6-6 4 4 8-8M14 7h7v7'],
+  ['playbook','Playbook','M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v15'],
+  ['settings','Settings','M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']
+];
+function renderNav(){
+  const sc = dayScore(today());
+  const badges = { today: sc.total ? `${sc.done}/${sc.total}` : '', pipeline: String(S.ideas.filter(i=>i.stage!=='posted').length), reels: String(S.reels.filter(r=>r.stage!=='posted').length) };
+  $('#nav').innerHTML = TABS.map(([k,l,p]) => `<button class="${S.tab===k?'active':''}" data-tab="${k}"><span class="ic"><svg viewBox="0 0 24 24"><path d="${p}"/></svg></span>${l}${badges[k]?`<span class="badge">${badges[k]}</span>`:''}</button>`).join('');
+}
+
+/* ============ render ============ */
+function render(){
+  renderNav();
+  const r = { today:rToday, calendar:rCalendar, pipeline:rPipeline, newsletter:rNewsletter, x:rX, reels:rReels, growth:rGrowth, playbook:rPlaybook, settings:rSettings }[S.tab] || rToday;
+  $('#main').innerHTML = r();
+  if(S.tab==='growth') wireSparks();
+  save();
+}
+function head(eyebrow, title, sub, actions=''){
+  return `<div class="topbar"><div><div class="eyebrow">${eyebrow}</div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="actions">${actions}</div></div>`;
+}
+const exPill = ex => ex ? `<span class="pill ex">example</span>` : '';
+const platPill = p => `<span class="plat"><i></i>${PLATFORMS[p]?PLATFORMS[p].short:'ALL'}</span>`;
+const statusPill = s => ({planned:'p',drafted:'warn',scheduled:'acc',posted:'good',idea:'p',drafting:'warn',ready:'acc',sent:'good'}[s]||'p');
+
+/* ---- TODAY ---- */
+function rToday(){
+  const t = today(); const list = tasksFor(t); const d = S.done[t]||{}; const sc = dayScore(t);
+  const ws = weekStart(t);
+  const isNl = nlWeek(t, S.settings.nlAnchor);
+  const nextNl = S.newsletters.filter(n=>n.status!=='sent' && n.sendDate>=t).sort((a,b)=>a.sendDate.localeCompare(b.sendDate))[0];
+  const upcoming = S.posts.filter(p=>p.status!=='posted' && p.date>t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+  const reelsInFlight = S.reels.filter(r=>r.stage!=='posted');
+  const weekPosts = S.posts.filter(p=>p.date>=ws && p.date<=addDays(ws,6));
+  const weekPosted = weekPosts.filter(p=>p.status==='posted').length;
+  const dayStart = S.settings.startDate; const dayN = daysBetween(dayStart, t)+1;
+  const byPlat = PLAT_ORDER.map(p=>{ const arr=list.filter(x=>x.p===p); return arr.length?`${PLATFORMS[p].short} ${arr.filter(x=>d[x.key]).length}/${arr.length}`:null; }).filter(Boolean).join(' · ');
+  return head('Command center', fmtLong(t), `Day ${dayN} of your ${S.settings.goalDays}-day push. ${isNl?'<b>Newsletter week.</b>':'Off-week for the newsletter.'} ${byPlat}`,
+      `<button class="btn" data-act="gotab" data-v="calendar">Open this week</button><button class="btn primary" data-act="addpost" data-date="${t}">+ Add post</button>`) +
+  `<div class="grid g4" style="margin-bottom:16px">
+    <div class="panel dark"><h3>Today</h3><div class="big num">${sc.pct}<span style="font-size:22px">%</span></div><div class="muted" style="color:rgba(255,255,255,.6);margin-top:6px">${sc.done} of ${sc.total} tasks done</div><div class="prog" style="margin-top:10px"><i style="width:${sc.pct}%"></i></div></div>
+    <div class="panel"><h3>Streak</h3><div class="big num">${streak()}</div><div class="muted" style="margin-top:6px">days at 80%+ complete</div></div>
+    <div class="panel"><h3>This week</h3><div class="big num">${weekPosted}<span style="font-size:20px;color:var(--ink3)">/${weekPosts.length}</span></div><div class="muted" style="margin-top:6px">posts published vs planned</div></div>
+    <div class="panel"><h3>Next newsletter</h3><div class="big sm">${nextNl?fmt(nextNl.sendDate):'—'}</div><div class="muted" style="margin-top:6px">${nextNl?`Issue #${nextNl.issue} · ${nextNl.status} · ${daysBetween(t,nextNl.sendDate)} days left`:'Add an issue on the Newsletter tab'}</div></div>
+  </div>
+  <div class="grid g3">
+    <div class="panel span2">
+      <div class="h"><h3>Today's checklist</h3><span class="muted">Built from your weekly cadence + anything scheduled today</span></div>
+      <ul class="check">${list.map(x=>`<li class="${d[x.key]?'done':''}"><button class="box" data-act="toggle" data-key="${x.key}" aria-label="mark done"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></button><div class="t">${esc(x.t)}<small>${esc(x.s||'')}</small></div>${platPill(x.p)}${x.ref?`<button class="btn small ghost" data-act="${x.ref==='post'?'editpost':'editnl'}" data-id="${x.id}">open</button>`:''}</li>`).join('')}</ul>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel"><h3>Week scorecard</h3>${weekCard(ws)}</div>
+      <div class="panel"><h3>Coming up</h3>${upcoming.length?`<table><tbody>${upcoming.map(p=>`<tr><td class="num" style="white-space:nowrap;color:var(--ink3)">${fmt(p.date)}</td><td>${platPill(p.platform)}</td><td><a href="#" data-act="editpost" data-id="${p.id}" style="color:inherit;text-decoration:none">${esc(p.title)}</a></td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nothing scheduled ahead. Sunday task: fill the calendar.</div>'}</div>
+      <div class="panel"><h3>Reels in production</h3>${reelsInFlight.length?reelsInFlight.slice(0,4).map(r=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:14px"><span>${esc(r.title)}</span><span class="muted num">${fmt(r.postDate)}</span></div><div class="stages" style="margin-top:5px">${REEL_STAGES.map((s,i)=>`<span class="${i<=REEL_STAGES.indexOf(r.stage)?'on':''}" title="${s}"></span>`).join('')}</div></div>`).join(''):'<div class="empty">No reels in the pipeline.</div>'}</div>
+    </div>
+  </div>`;
+}
+function weekCard(ws){
+  const t = today();
+  return `<div class="week7">${[0,1,2,3,4,5,6].map(i=>{ const d=addDays(ws,i); const s=dayScore(d); const future=d>t; return `<div class="d ${d===t?'today':''}"><div class="l">${DAYS[parse(d).getDay()]}</div><div class="v num">${future?'·':s.pct+'%'}</div><div class="bar"><i style="width:${future?0:s.pct}%"></i></div></div>`; }).join('')}</div>`;
+}
+
+/* ---- CALENDAR ---- */
+const EXPECTED = { // ghost slots per weekday per platform
+  li:{1:'Text post',3:'Text post',4:'Carousel',5:'Text post'},
+  ig:{1:'Reel',2:'Carousel',3:'Reel',5:'Reel',6:'Reel'},
+  fb:{1:'Reel',3:'Reel',5:'Reel',6:'Reel'},
+  x:{0:'3 tweets',1:'3 tweets',2:'3 tweets + chat',3:'3 tweets',4:'3 tweets + chat',5:'3 tweets',6:'3 tweets'},
+  th:{0:'1 thread',1:'1 thread',2:'1 thread',3:'1 thread',4:'1 thread',5:'1 thread',6:'1 thread'},
+  nl:{4:'Send issue'}
+};
+function rCalendar(){
+  const ws = S.calWeek; const t = today();
+  const days = [0,1,2,3,4,5,6].map(i=>addDays(ws,i));
+  const inWeek = S.posts.filter(p=>p.date>=ws && p.date<=days[6]);
+  const isNl = nlWeek(ws, S.settings.nlAnchor);
+  const counts = POST_STATUS.map(s=>`${inWeek.filter(p=>p.status===s).length} ${s}`).join(' · ');
+  return head('Content calendar', `Week of ${fmt(ws)}`, `${inWeek.length} posts planned · ${counts}. Dashed slots are what your cadence expects, click one to fill it.`,
+    `<button class="btn" data-act="calnav" data-v="-7">← Prev</button><button class="btn" data-act="calnav" data-v="0">This week</button><button class="btn" data-act="calnav" data-v="7">Next →</button><button class="btn primary" data-act="addpost" data-date="${ws}">+ Add post</button>`) +
+  `<div class="tbl"><div class="cal">
+    <div class="hd">Platform</div>${days.map(d=>`<div class="hd ${d===t?'today':''}">${DAYS[parse(d).getDay()]}<b class="num">${fmt(d)}</b></div>`).join('')}
+    ${PLAT_ORDER.map(p=>`<div class="rl">${PLATFORMS[p].name}<small>${{li:'3 posts + carousel',ig:'4 reels + carousel',fb:'cross-post reels',x:'3 tweets / day',th:'1 / day',nl:'every 2nd Thu'}[p]}</small></div>`+
+      days.map(d=>{ const dow=parse(d).getDay(); const items=inWeek.filter(x=>x.date===d && x.platform===p); const exp=EXPECTED[p][dow];
+        const showGhost = !items.length && exp && !(p==='nl' && !isNl);
+        return `<div class="cell ${d===t?'today':''}">${items.map(x=>`<div class="chip ${x.status}" data-act="editpost" data-id="${x.id}" title="${esc(x.title)}">${esc(x.type)}: ${esc(x.title)}</div>`).join('')}${showGhost?`<div class="ghost" data-act="addpost" data-date="${d}" data-plat="${p}" data-type="${esc(exp)}">+ ${exp}</div>`:''}<button class="add" data-act="addpost" data-date="${d}" data-plat="${p}" title="add">+</button></div>`; }).join('')).join('')}
+  </div></div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="panel"><h3>Status key</h3><div class="row"><span class="pill p">planned</span><span class="pill warn">drafted</span><span class="pill acc">scheduled</span><span class="pill good">posted</span></div><p class="hint" style="margin:10px 0 0">Move a post to <b>scheduled</b> once it's in Meta Business Suite / LinkedIn scheduler. Mark <b>posted</b> the same day so the Today score stays honest.</p></div>
+    <div class="panel"><h3>Fill rule</h3><p class="hint" style="margin:0">Sunday = planning day. Every dashed slot for the coming week should turn into a real post before Monday. One idea from the Pipeline can fill 5+ slots via <b>Repurpose</b>.</p></div>
+    <div class="panel"><h3>Best posting windows (IST)</h3><table><tbody><tr><td>LinkedIn</td><td class="num">8–9 AM, Tue–Thu strongest</td></tr><tr><td>Instagram</td><td class="num">12–1 PM and 7–9 PM</td></tr><tr><td>Facebook</td><td class="num">1–3 PM</td></tr><tr><td>X</td><td class="num">8 AM · 1 PM · 9 PM</td></tr><tr><td>Threads</td><td class="num">Evening, after the day's best tweet</td></tr></tbody></table></div>
+  </div>`;
+}
+
+/* ---- PIPELINE ---- */
+function rPipeline(){
+  const cols = {idea:'Ideas', drafting:'Drafting', ready:'Ready to post', posted:'Posted'};
+  return head('Idea pipeline', 'One idea, every platform', 'Capture ideas here, move them right as they mature. <b>Repurpose</b> turns one ready idea into posts across LinkedIn, Instagram, Facebook, X, Threads and the newsletter in one click.',
+    `<button class="btn primary" data-act="addidea">+ New idea</button>`) +
+  `<div class="kanban">${IDEA_STAGES.map(st=>{ const items=S.ideas.filter(i=>i.stage===st); return `<div class="col"><div class="ch"><span>${cols[st]}</span><span class="num">${items.length}</span></div>${items.map(i=>`<div class="card"><div class="ti">${esc(i.title)}</div><div class="meta"><span class="pill acc">${esc(i.pillar)}</span>${(i.platforms||[]).map(p=>`<span class="pill p">${PLATFORMS[p].short}</span>`).join('')}${exPill(i.ex)}</div>${i.notes?`<div class="muted">${esc(i.notes)}</div>`:''}<div class="acts">${st!=='idea'?`<button data-act="idea-move" data-id="${i.id}" data-v="-1" title="move back">←</button>`:''}<button data-act="editidea" data-id="${i.id}">edit</button>${st!=='posted'?`<button data-act="repurpose" data-id="${i.id}" style="color:var(--accent-ink);border-color:var(--accent-ink)">repurpose</button>`:''}${st!=='posted'?`<button data-act="idea-move" data-id="${i.id}" data-v="1" title="move forward">→</button>`:''}</div></div>`).join('')||'<div class="empty">Empty</div>'}</div>`; }).join('')}</div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>Content pillars</h3><div class="row">${PILLARS.map(p=>`<span class="pill acc">${p}</span>`).join('')}</div><p class="hint" style="margin:10px 0 0">Aim for this weekly mix: 2 tutorials · 1 news roundup · 1 prompting tip · 1 brand visuals · 1 personal/BTS · 1 student win. If a pillar has been quiet for 2 weeks, it goes first next week.</p></div>
+    <div class="panel"><h3>Idea sources (30 min every Sunday)</h3><ul class="tight"><li>Questions students asked this week in TagMango</li><li>Your daily AI research log (turn 1 update into 1 tutorial)</li><li>Comments on your top-performing reel</li><li>A "before / after" from your own graphics work</li><li>Something a competitor explained badly, explain it simply</li></ul></div>
+  </div>`;
+}
+
+/* ---- NEWSLETTER ---- */
+function rNewsletter(){
+  const t = today();
+  const list = [...S.newsletters].sort((a,b)=>a.sendDate.localeCompare(b.sendDate));
+  const nextDates = []; let d = S.settings.nlAnchor; while(d < t) d = addDays(d,14); for(let i=0;i<6;i++){ nextDates.push(d); d = addDays(d,14); }
+  const missing = nextDates.filter(x=>!S.newsletters.some(n=>n.sendDate===x));
+  const sent = list.filter(n=>n.status==='sent');
+  const lastSubs = sent.length ? sent[sent.length-1].subs : (S.metrics.length? S.metrics[S.metrics.length-1].nl : '');
+  return head('Newsletter', 'Bi-weekly AI updates', `Goes out every second Thursday. Draft on Wednesday of the send week, send Thursday morning, promote for 48 hours.`,
+    `<button class="btn primary" data-act="addnl">+ New issue</button>`) +
+  `<div class="grid g4" style="margin-bottom:16px">
+    <div class="panel dark"><h3>Issues sent</h3><div class="big num">${sent.length}</div></div>
+    <div class="panel"><h3>Subscribers</h3><div class="big num">${lastSubs||'—'}</div><div class="muted" style="margin-top:6px">goal ${S.settings.goals.nl.toLocaleString('en-IN')}</div></div>
+    <div class="panel"><h3>Avg open rate</h3><div class="big num">${sent.length&&sent.some(n=>n.open)?Math.round(sent.filter(n=>n.open).reduce((a,n)=>a+Number(n.open),0)/sent.filter(n=>n.open).length)+'%':'—'}</div><div class="muted" style="margin-top:6px">40%+ is strong for a niche list</div></div>
+    <div class="panel"><h3>Next send dates</h3><div class="num" style="font-size:14px;line-height:1.7">${nextDates.slice(0,4).map(x=>`<div>${fmt(x)} ${S.newsletters.some(n=>n.sendDate===x)?'<span class="pill good">issue exists</span>':`<button class="btn small ghost" data-act="addnl" data-date="${x}">create</button>`}</div>`).join('')}</div></div>
+  </div>
+  <div class="grid g3">
+    <div class="panel span2"><div class="h"><h3>Issues</h3></div><div class="tbl"><table><thead><tr><th>#</th><th>Send date</th><th>Subject</th><th>Status</th><th>Subs</th><th>Open</th><th></th></tr></thead><tbody>${list.map(n=>`<tr><td class="num">${n.issue}</td><td class="num" style="white-space:nowrap">${fmt(n.sendDate)}</td><td>${esc(n.subject)||'<span class="muted">no subject yet</span>'} ${exPill(n.ex)}</td><td><span class="pill ${statusPill(n.status)}">${n.status}</span></td><td class="num">${n.subs||'—'}</td><td class="num">${n.open?n.open+'%':'—'}</td><td><button class="btn small" data-act="editnl" data-id="${n.id}">open</button></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">No issues yet.</div></td></tr>'}</tbody></table></div></div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel"><h3>Issue template</h3><ol style="margin:0;padding-left:18px;font-size:14px;color:var(--ink2);line-height:1.7"><li><b>Hook line</b>, one sentence, why this issue matters</li><li><b>5 AI updates</b>, one line each + "why you care"</li><li><b>Tool of the fortnight</b>, one tool, one use case</li><li><b>Quick tutorial</b>, 5 steps with screenshots</li><li><b>CTA</b>, reply prompt or course link</li></ol></div>
+      <div class="panel"><h3>Send-day promo routine</h3><ul class="tight"><li>Tweet the #1 update with "full list in today's newsletter"</li><li>IG story: screenshot of the tutorial section + link sticker</li><li>LinkedIn: post the tutorial as text, mention the newsletter in a comment</li><li>Thread: 3 of the 5 updates, link in reply</li></ul></div>
+    </div>
+  </div>`;
+}
+
+/* ---- X & THREADS ---- */
+function rX(){
+  const t = today(); const slots = S.xslots[t] || [{text:'',posted:false},{text:'',posted:false},{text:'',posted:false}];
+  const labels = ['Morning · AI news', 'Midday · insight or tip', 'Evening · question / engagement'];
+  const replies = S.replies[t]||0;
+  const bank = S.tweets.filter(x=>x.status==='bank');
+  const used = S.tweets.filter(x=>x.status==='used').length;
+  return head('X & Threads', 'Three tweets, ten replies, one thread', 'Write today\'s three tweets here, or pull from the bank. Your best tweet of the day becomes tonight\'s Thread.',
+    `<button class="btn" data-act="addtweet">+ Add to bank</button>`) +
+  `<div class="grid g3" style="margin-bottom:16px">${slots.map((s,i)=>`<div class="slot ${s.posted?'posted':''}"><div class="sh"><b>Slot ${i+1}</b><span class="muted">${labels[i]}</span></div><textarea data-act="slot" data-i="${i}" placeholder="${i===0?'What changed in AI today, in one plain sentence?':i===1?'One thing you learned making graphics this week':'Ask your audience something they will actually answer'}">${esc(s.text)}</textarea><div class="row" style="justify-content:space-between"><span class="cnt num ${s.text.length>280?'over':''}">${s.text.length}/280</span><div class="row"><button class="btn small ghost" data-act="slot-pull" data-i="${i}" ${bank.length?'':'disabled'}>pull from bank</button><button class="btn small ${s.posted?'':'primary'}" data-act="slot-post" data-i="${i}">${s.posted?'posted ✓':'mark posted'}</button></div></div></div>`).join('')}</div>
+  <div class="grid g3">
+    <div class="panel"><h3>Replies today</h3><div class="counter"><button data-act="rep" data-v="-1">−</button><div class="big num">${replies}<span style="font-size:18px;color:var(--ink3)">/10</span></div><button data-act="rep" data-v="1">+</button></div><div class="prog" style="margin-top:12px"><i style="width:${clamp(replies*10,0,100)}%"></i></div><p class="hint" style="margin:10px 0 0">Reply to accounts 5–50× your size in AI, marketing and design. Add a real take, a resource, or a question. That is where new followers come from.</p></div>
+    <div class="panel span2"><div class="h"><h3>Chats & Spaces to join</h3><button class="btn small" data-act="addchat">+ Add chat</button></div><div class="tbl"><table><thead><tr><th>Name</th><th>When</th><th>Tag</th><th>Notes</th><th></th></tr></thead><tbody>${S.xChats.map(c=>`<tr><td>${esc(c.name)} ${exPill(c.ex)}</td><td class="num" style="white-space:nowrap">${esc(c.day)} ${esc(c.time)}</td><td>${esc(c.tag)}</td><td class="muted">${esc(c.notes)}</td><td><button class="btn small" data-act="editchat" data-id="${c.id}">edit</button></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">Add the chats you join on Tuesday and Thursday.</div></td></tr>'}</tbody></table></div><p class="hint" style="margin:10px 0 0">Chat rules: show up 5 min early, answer every question in the first 20 min, quote-tweet the host's best line after, follow 5 people you agreed with.</p></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><div class="h"><h3>Tweet bank</h3><span class="muted num">${bank.length} ready · ${used} used</span></div>${bank.length?`<div class="tbl"><table><tbody>${bank.map(x=>`<tr><td>${esc(x.text)} ${exPill(x.ex)}</td><td class="num muted" style="white-space:nowrap">${x.text.length}/280</td><td style="white-space:nowrap"><button class="btn small" data-act="edittweet" data-id="${x.id}">edit</button> <button class="btn small ghost" data-act="tweet-used" data-id="${x.id}">mark used</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Bank is empty. Sunday task: write 21 tweets for the week.</div>'}
+  <p class="hint" style="margin:12px 0 0"><b>Tweet formulas that work for a teacher:</b> "Most people do X. Do Y instead." · "I tested A vs B. Result:" · "Steal this prompt:" · "Unpopular opinion about AI graphics:" · "Question for social media managers:"</p></div>`;
+}
+
+/* ---- REELS ---- */
+function rReels(){
+  const list = [...S.reels].sort((a,b)=>(a.postDate||'9').localeCompare(b.postDate||'9'));
+  const byStage = REEL_STAGES.map(s=>[s, S.reels.filter(r=>r.stage===s).length]);
+  return head('Reels', 'Four reels a week, shot in one sitting', 'Every reel goes to Instagram first, then Facebook the same day. Saturday is batch-shoot day: four scripts, one setup.',
+    `<button class="btn primary" data-act="addreel">+ New reel</button>`) +
+  `<div class="grid g6" style="margin-bottom:16px">${byStage.map(([s,n])=>`<div class="panel"><h3>${s}</h3><div class="big sm num">${n}</div></div>`).join('')}<div class="panel dark"><h3>Posted total</h3><div class="big sm num">${S.reels.filter(r=>r.stage==='posted').length}</div></div></div>
+  <div class="panel"><div class="tbl"><table><thead><tr><th>Reel</th><th>Hook (first 2 seconds)</th><th>Stage</th><th>Post date</th><th>Goes to</th><th></th></tr></thead><tbody>${list.map(r=>`<tr><td><b>${esc(r.title)}</b> ${exPill(r.ex)}${r.script?`<div class="muted">${esc(r.script)}</div>`:''}</td><td>${esc(r.hook)}</td><td><div class="stages" style="width:110px">${REEL_STAGES.map((s,i)=>`<span class="${i<=REEL_STAGES.indexOf(r.stage)?'on':''}"></span>`).join('')}</div><div class="muted" style="margin-top:4px">${r.stage}</div></td><td class="num" style="white-space:nowrap">${fmt(r.postDate)||'—'}</td><td>${(r.platforms||[]).map(p=>`<span class="pill p">${PLATFORMS[p].short}</span>`).join(' ')}</td><td style="white-space:nowrap"><button class="btn small" data-act="editreel" data-id="${r.id}">edit</button> ${r.stage!=='posted'?`<button class="btn small primary" data-act="reel-next" data-id="${r.id}">→ ${REEL_STAGES[REEL_STAGES.indexOf(r.stage)+1]}</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">No reels yet.</div></td></tr>'}</tbody></table></div></div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>Hook patterns (pick one per reel)</h3><ul class="tight"><li><b>Contrast:</b> "Same prompt. Two tools. One winner."</li><li><b>Mistake:</b> "Your AI graphics look cheap because of ONE missing line."</li><li><b>Speed:</b> "5 ad creatives. 5 minutes. No designer."</li><li><b>Curiosity:</b> "Nobody talks about this Nano Banana setting."</li><li><b>Personal:</b> "I stopped hiring designers. Here's what replaced them."</li></ul></div>
+    <div class="panel"><h3>Reel structure (20–40 seconds)</h3><ol style="margin:0;padding-left:18px;font-size:14px;color:var(--ink2);line-height:1.7"><li>0–2s hook, text on screen, say it in Hinglish if natural</li><li>2–8s the problem, one example on screen</li><li>8–30s the fix, screen recording, fast cuts</li><li>last 3s "Save this" + "Newsletter link in bio"</li></ol><p class="hint" style="margin:8px 0 0">Caption: first line = hook again. 3–5 hashtags. Cross-post to Facebook with the same caption.</p></div>
+  </div>`;
+}
+
+/* ---- GROWTH ---- */
+function rGrowth(){
+  const rows = [...S.metrics].sort((a,b)=>a.week.localeCompare(b.week));
+  const last = rows[rows.length-1]; const prev = rows[rows.length-2];
+  const t = today(); const elapsed = daysBetween(S.settings.startDate, t); const left = Math.max(0, S.settings.goalDays - elapsed);
+  return head('Growth', 'Numbers, once a week', `Log every Friday. ${left} days left in the ${S.settings.goalDays}-day push. Each chart is one platform, same scale rules, so you compare shape not size.`,
+    `<button class="btn primary" data-act="addmetric">+ Log this week</button>`) +
+  `<div class="grid g3" style="margin-bottom:16px">${PLAT_ORDER.map(p=>{ const vals=rows.map(r=>Number(r[p])||0); const cur=last?Number(last[p])||0:0; const pv=prev?Number(prev[p])||0:null; const delta=pv!==null?cur-pv:null; const goal=S.settings.goals[p]; const pct=goal?clamp(Math.round(cur/goal*100),0,100):0;
+      return `<div class="panel metric-card"><div class="top"><div><h3 style="margin-bottom:2px">${PLATFORMS[p].name}${p==='nl'?' subscribers':' followers'}</h3><div class="v num">${cur.toLocaleString('en-IN')}</div></div>${delta!==null?`<span class="delta num ${delta>=0?'up':'dn'}">${delta>=0?'+':''}${delta.toLocaleString('en-IN')} this week</span>`:''}</div>${spark(vals, rows.map(r=>r.week))}<div class="row" style="justify-content:space-between;font-size:12.5px"><span class="muted">Goal ${goal.toLocaleString('en-IN')}</span><span class="num muted">${pct}%</span></div><div class="prog"><i style="width:${pct}%"></i></div><div class="tip"></div></div>`; }).join('')}</div>
+  <div class="panel"><div class="h"><h3>Weekly log</h3><span class="muted">${rows.some(r=>r.ex)?'Rows marked example are placeholders. Replace them with your real numbers.':''}</span></div><div class="tbl"><table><thead><tr><th>Week of</th>${PLAT_ORDER.map(p=>`<th>${PLATFORMS[p].short}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r=>`<tr><td class="num" style="white-space:nowrap">${fmt(r.week)} ${exPill(r.ex)}</td>${PLAT_ORDER.map(p=>`<td class="num">${Number(r[p]||0).toLocaleString('en-IN')}</td>`).join('')}<td><button class="btn small" data-act="editmetric" data-id="${r.id}">edit</button></td></tr>`).join('')||'<tr><td colspan="8"><div class="empty">No numbers yet. Log the first row now so you have a baseline.</div></td></tr>'}</tbody></table></div></div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="panel"><h3>What to watch, per platform</h3><ul class="tight"><li><b>Instagram:</b> reel reach + saves, not likes</li><li><b>LinkedIn:</b> profile views after each post</li><li><b>X:</b> profile visits from replies</li><li><b>Newsletter:</b> open rate and replies</li></ul></div>
+    <div class="panel"><h3>Weekly review (10 min, Friday)</h3><ul class="tight"><li>Best post of the week → repurpose it to 2 other platforms next week</li><li>Worst post → was it the hook or the topic?</li><li>One thing to stop, one to double down on</li></ul></div>
+    <div class="panel"><h3>Fair expectations</h3><p class="hint" style="margin:0">With this cadence, steady creators see 5–10% monthly follower growth and a newsletter that grows mostly from reels + LinkedIn. Big jumps come from one reel that lands. Consistency buys the tickets.</p></div>
+  </div>`;
+}
+function spark(vals, labels){
+  const W=300,H=84,pl=6,pr=10,pt=10,pb=8; const n=vals.length;
+  if(n<2) return `<svg class="spark" viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="12" fill="var(--ink3)">Log two weeks to see a trend</text></svg>`;
+  const mn=Math.min(...vals), mx=Math.max(...vals); const rng=(mx-mn)||1;
+  const X=i=>pl+i*(W-pl-pr)/(n-1); const Y=v=>pt+(H-pt-pb)*(1-(v-mn)/rng);
+  const pts=vals.map((v,i)=>[X(i),Y(v)]);
+  const path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=path+` L${pts[n-1][0].toFixed(1)} ${H-pb} L${pts[0][0].toFixed(1)} ${H-pb} Z`;
+  const grid=[0.5].map(f=>`<line class="grid" x1="${pl}" x2="${W-pr}" y1="${(pt+(H-pt-pb)*f).toFixed(1)}" y2="${(pt+(H-pt-pb)*f).toFixed(1)}"/>`).join('');
+  const seg=(W-pl-pr)/(n-1);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<path class="area" d="${area}"/><path class="line" d="${path}"/><line class="vline" y1="${pt}" y2="${H-pb}" x1="0" x2="0"/><circle class="pt" r="4" cx="${pts[n-1][0]}" cy="${pts[n-1][1]}"/>${pts.map((p,i)=>`<rect class="hit" x="${(p[0]-seg/2).toFixed(1)}" y="0" width="${seg.toFixed(1)}" height="${H}" data-v="${vals[i]}" data-l="${labels[i]}" data-x="${p[0].toFixed(1)}"/>`).join('')}</svg>`;
+}
+function wireSparks(){
+  document.querySelectorAll('.metric-card').forEach(card=>{
+    const tip=card.querySelector('.tip'); const svg=card.querySelector('svg'); const vl=svg.querySelector('.vline');
+    svg.querySelectorAll('.hit').forEach(h=>{
+      h.addEventListener('mouseenter',e=>{ const r=svg.getBoundingClientRect(); const cr=card.getBoundingClientRect(); const x=Number(h.dataset.x)/300*r.width; tip.style.display='block'; tip.style.left=(r.left-cr.left+x)+'px'; tip.style.top=(r.top-cr.top)+'px'; tip.textContent=`${fmt(h.dataset.l)}: ${Number(h.dataset.v).toLocaleString('en-IN')}`; vl.setAttribute('x1',h.dataset.x); vl.setAttribute('x2',h.dataset.x); vl.style.opacity=1; });
+      h.addEventListener('mouseleave',()=>{ tip.style.display='none'; vl.style.opacity=0; });
+    });
+  });
+}
+
+/* ---- PLAYBOOK ---- */
+function rPlaybook(){
+  const N = S.settings.notes||{};
+  const plat = [
+    ['li','LinkedIn','3 text posts (Mon/Wed/Fri) + 1 carousel (Thu)','8–9 AM IST','Lessons, opinions, student stories. Hook in line 1, no link in the post, link in first comment.','Comment on 5 posts in your niche before you post. LinkedIn rewards early engagement.'],
+    ['ig','Instagram','4 reels (Mon/Wed/Fri/Sat) + 1 carousel (Tue) + daily story','12–1 PM · 7–9 PM IST','Reels = reach. Carousels = saves. Stories = trust. Pin your best tutorial reel.','Reply to every comment in the first hour. Use 3–5 niche hashtags, not 30.'],
+    ['fb','Facebook','Cross-post all 4 reels + 2 text posts','1–3 PM IST','Same reels, slightly warmer caption. Facebook audience is older, more business-owner heavy.','Share reels to 2–3 relevant groups where you are already active.'],
+    ['x','X','3 tweets/day + 10 replies/day + 2 chats/week','8 AM · 1 PM · 9 PM IST','Short, plain, opinionated. News in the morning, tips midday, questions at night.','Replies grow you faster than tweets. Spend 20 min a day on them.'],
+    ['th','Threads','1 post/day, repurposed from your best tweet','Evening','Longer than a tweet, softer tone. Ask questions, share the "why".','Threads rewards conversation. Reply to your own post to add detail.'],
+    ['nl','Newsletter','1 issue every 2nd Thursday','Thu 9 AM IST','5 updates · 1 tool · 1 tutorial · 1 CTA. Plain language, screenshots, one link to the course.','Every reel and LinkedIn post ends with "newsletter link in bio/comments". The list is the asset you own.']
+  ];
+  return head('Playbook', 'How the machine runs', 'The strategy behind every checklist on this dashboard. Edit the notes under each platform as you learn what works for you.') +
+  `<div class="panel dark" style="margin-bottom:16px"><h3>The repurposing chain</h3><div class="flow"><div class="node src"><b>1 idea</b>From the Pipeline: one tutorial, one insight, one story</div><div class="arrow">→</div><div class="node"><b>Reel</b>20–40s demo, IG + FB</div><div class="arrow">→</div><div class="node"><b>Carousel</b>Same steps as slides, IG Tue → LI Thu</div><div class="arrow">→</div><div class="node"><b>LinkedIn post</b>The lesson in 200 words</div><div class="arrow">→</div><div class="node"><b>3 tweets + 1 thread</b>Hook, tip, question</div><div class="arrow">→</div><div class="node"><b>Newsletter section</b>The tutorial with screenshots</div></div><p class="hint" style="color:rgba(255,255,255,.65);margin:12px 0 0">Order matters: shoot the reel first. The script gives you the carousel. The carousel gives you the LinkedIn post. The post gives you the tweets. Nothing is written twice.</p></div>
+  <div class="pb" style="margin-bottom:16px">${plat.map(([k,name,cad,time,what,tip])=>`<div class="panel"><h3>${name}</h3><dl><dt>Cadence</dt><dd>${cad}</dd><dt>Best time</dt><dd class="num">${time}</dd><dt>What works</dt><dd>${what}</dd><dt>Growth tip</dt><dd>${tip}</dd></dl><label class="f" style="margin-top:12px">Your notes<textarea data-act="note" data-k="${k}" placeholder="What is working for you here?" style="min-height:64px">${esc(N[k]||'')}</textarea></label></div>`).join('')}</div>
+  <div class="grid g3">
+    <div class="panel"><div class="phase"><b>Days 1–30 · Show up</b><ul class="tight"><li>Hit the cadence 5 days out of 7</li><li>Ship newsletter issues #1 and #2</li><li>Find 4 real X chats, join 2 per week</li><li>Log baseline numbers in week 1</li></ul></div></div>
+    <div class="panel"><div class="phase"><b>Days 31–60 · Find the signal</b><ul class="tight"><li>Double down on the 2 reel formats with the most saves</li><li>Turn every newsletter tutorial into a LinkedIn carousel</li><li>Start one recurring series (e.g. "Prompt of the week")</li><li>Ask for newsletter replies, use them as content</li></ul></div></div>
+    <div class="panel"><div class="phase"><b>Days 61–90 · Convert</b><ul class="tight"><li>Weekly student-win post on LinkedIn + Instagram</li><li>Newsletter issue with a soft course pitch every 2nd issue</li><li>Run one live session promoted across all 5 platforms</li><li>Review the 90-day numbers, set the next goals</li></ul></div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>Voice rules (from your brand memory)</h3><p class="hint" style="margin:0">Simple words, Grade 5 level. Teach like you are explaining to a friend. Hinglish is welcome where it sounds natural. No jargon, no corporate tone. Every piece answers "what do I do with this?" in the first 3 seconds.</p></div>`;
+}
+
+/* ---- SETTINGS ---- */
+function rSettings(){
+  const g = S.settings.goals;
+  return head('Settings', 'Goals, dates, backup', 'Everything is saved in this browser. Export a backup now and then, or to move to another device.') +
+  `<div class="grid g2">
+    <div class="panel"><h3>90-day goals</h3><div class="grid g2">${PLAT_ORDER.map(p=>`<label class="f">${PLATFORMS[p].name} ${p==='nl'?'subscribers':'followers'}<input type="number" data-act="goal" data-k="${p}" value="${g[p]}"></label>`).join('')}</div></div>
+    <div class="panel"><h3>Dates</h3><div class="grid g2"><label class="f">Push start date<input type="date" data-act="setting" data-k="startDate" value="${S.settings.startDate}"></label><label class="f">Push length (days)<input type="number" data-act="setting" data-k="goalDays" value="${S.settings.goalDays}"></label><label class="f w">Newsletter anchor (a Thursday)<input type="date" data-act="setting" data-k="nlAnchor" value="${S.settings.nlAnchor}"></label></div><p class="hint" style="margin:10px 0 0">The newsletter goes out on the anchor date and every 14 days after. Newsletter-week tasks appear on the Today tab only on those weeks.</p></div>
+    <div class="panel"><h3>Backup</h3><div class="row"><button class="btn primary" data-act="export">Copy backup to clipboard</button><button class="btn" data-act="download">Download JSON</button></div><label class="f" style="margin-top:12px">Restore: paste a backup here<textarea id="importBox" placeholder='{"v":1, ...}'></textarea></label><div class="row" style="margin-top:8px"><button class="btn" data-act="import">Restore from pasted backup</button></div></div>
+    <div class="panel"><h3>Example data</h3><p class="hint" style="margin:0 0 10px">Items marked <span class="pill ex">example</span> were added so you can see how each tab works. Remove them once you have your own.</p><div class="row"><button class="btn" data-act="clearex">Remove all example items</button><button class="btn danger" data-act="reset">Reset everything</button></div></div>
+  </div>`;
+}
+
+/* ============ modal forms ============ */
+function openModal(title, fieldsHtml, onSave, onDelete){
+  $('#modal').innerHTML = `<h3>${title}</h3><form id="mform"><div class="fields">${fieldsHtml}</div><div class="foot"><div>${onDelete?'<button type="button" class="btn danger" id="mdel">Delete</button>':''}</div><div class="row"><button type="button" class="btn" id="mcancel">Cancel</button><button type="submit" class="btn primary">Save</button></div></div></form>`;
+  $('#modalBg').classList.add('open');
+  const f = $('#mform');
+  f.onsubmit = e => { e.preventDefault(); const data = {}; new FormData(f).forEach((v,k)=>{ if(data[k]!==undefined){ data[k]=[].concat(data[k],v);} else data[k]=v; }); f.querySelectorAll('input[type=checkbox]').forEach(cb=>{ if(!data[cb.name]) data[cb.name]=[]; else data[cb.name]=[].concat(data[cb.name]); }); onSave(data); closeModal(); render(); };
+  $('#mcancel').onclick = closeModal;
+  if(onDelete) $('#mdel').onclick = ()=>{ if(confirm('Delete this item?')){ onDelete(); closeModal(); render(); } };
+  const first = f.querySelector('input,textarea,select'); if(first) first.focus();
+}
+function closeModal(){ $('#modalBg').classList.remove('open'); }
+$('#modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+const fld = (label,name,type='text',val='',extra='',wide=false) => `<label class="f ${wide?'w':''}">${label}<input type="${type}" name="${name}" value="${esc(val)}" ${extra}></label>`;
+const sel = (label,name,opts,val,wide=false) => `<label class="f ${wide?'w':''}">${label}<select name="${name}">${opts.map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
+const area = (label,name,val='',ph='') => `<label class="f w">${label}<textarea name="${name}" placeholder="${esc(ph)}">${esc(val)}</textarea></label>`;
+const platChecks = (name, chosen=[], keys=PLAT_ORDER) => `<div class="w"><div class="tag" style="margin-bottom:6px">Platforms</div><div class="checks">${keys.map(p=>`<label><input type="checkbox" name="${name}" value="${p}" ${chosen.includes(p)?'checked':''}>${PLATFORMS[p].name}</label>`).join('')}</div></div>`;
+
+function postForm(p){
+  const isNew = !p.id;
+  openModal(isNew?'Add post':'Edit post',
+    fld('Title / hook','title','text',p.title||'','required',true) + fld('Date','date','date',p.date||today()) + sel('Platform','platform',PLAT_ORDER.map(k=>PLATFORMS[k].name),PLATFORMS[p.platform||'ig'].name) + sel('Type','type',POST_TYPES,p.type||'Reel') + sel('Status','status',POST_STATUS,p.status||'planned') + area('Notes / caption draft','notes',p.notes||''),
+    d => { const platform = PLAT_ORDER.find(k=>PLATFORMS[k].name===d.platform); const obj = {...p, id:p.id||uid(), title:d.title, date:d.date, platform, type:d.type, status:d.status, notes:d.notes, ex:false};
+      if(isNew) S.posts.push(obj); else Object.assign(S.posts.find(x=>x.id===p.id), obj); toast(isNew?'Post added':'Post saved'); },
+    isNew?null:()=>{ S.posts = S.posts.filter(x=>x.id!==p.id); });
+}
+function ideaForm(i){
+  const isNew = !i.id;
+  openModal(isNew?'New idea':'Edit idea',
+    fld('Idea (one line)','title','text',i.title||'','required',true) + sel('Pillar','pillar',PILLARS,i.pillar||PILLARS[1]) + sel('Stage','stage',IDEA_STAGES,i.stage||'idea') + platChecks('platforms',i.platforms||[]) + area('Notes','notes',i.notes||'','Angle, example, who it is for…'),
+    d => { const obj={...i,id:i.id||uid(),title:d.title,pillar:d.pillar,stage:d.stage,platforms:d.platforms||[],notes:d.notes,ex:false}; if(isNew) S.ideas.push(obj); else Object.assign(S.ideas.find(x=>x.id===i.id),obj); toast('Idea saved'); },
+    isNew?null:()=>{ S.ideas=S.ideas.filter(x=>x.id!==i.id); });
+}
+function repurposeForm(i){
+  const ws = weekStart(addDays(today(),7));
+  const map = [['ig','Reel (Instagram)','Reel',0],['fb','Reel (Facebook cross-post)','Reel',0],['ig2','Carousel (Instagram)','Carousel',1],['li','Text post (LinkedIn)','Text post',2],['li2','Carousel (LinkedIn)','Carousel',3],['x','3 tweets (X)','Tweet',0],['th','Thread (Threads)','Thread',0],['nl','Newsletter tutorial section','Newsletter',null]];
+  openModal('Repurpose: '+esc(i.title),
+    fld('Week starting (Monday)','week','date',ws,'',true) + `<div class="w"><div class="tag" style="margin-bottom:6px">Create these</div><div class="checks">${map.map(([k,l])=>`<label><input type="checkbox" name="items" value="${k}" checked>${l}</label>`).join('')}</div></div><p class="hint w" style="margin:0">Posts land on the calendar as <b>planned</b>, on the days your cadence expects them. The newsletter section is appended to the next unsent issue.</p>`,
+    d => { const wk = weekStart(d.week); const items = d.items||[]; let n=0;
+      for(const [k,l,type,off] of map){ if(!items.includes(k)) continue;
+        if(k==='nl'){ const nl = S.newsletters.filter(x=>x.status!=='sent').sort((a,b)=>a.sendDate.localeCompare(b.sendDate))[0]; if(nl){ nl.tutorial = (nl.tutorial?nl.tutorial+'\n':'') + i.title; n++; } continue; }
+        const plat = k.replace(/\d/,''); S.posts.push({id:uid(), date:addDays(wk,off), platform:plat, type, title:i.title, status:'planned', ideaId:i.id, ex:false}); n++; }
+      if(items.includes('x')){ for(const tw of ['Hook: '+i.title,'Tip from: '+i.title,'Question about: '+i.title]) S.tweets.push({id:uid(), text:tw, status:'bank', ex:false}); }
+      if(i.stage==='idea') i.stage='drafting'; toast(`${n} items created`); });
+}
+function nlForm(n){
+  const isNew = !n.id; const nextIssue = (Math.max(0,...S.newsletters.map(x=>Number(x.issue)||0))+1);
+  openModal(isNew?'New issue':'Issue #'+n.issue,
+    fld('Issue #','issue','number',n.issue||nextIssue) + fld('Send date','sendDate','date',n.sendDate||today()) + fld('Subject line','subject','text',n.subject||'','',true) + sel('Status','status',['planned','drafting','ready','sent'],n.status||'planned') + `<div></div>` + area('Top 5 AI updates (one per line)','news',n.news||'') + area('Tool of the fortnight','tool',n.tool||'') + area('Quick tutorial','tutorial',n.tutorial||'') + area('CTA','cta',n.cta||'','Reply with…, join the course…') + fld('Subscribers at send','subs','number',n.subs||'') + fld('Open rate %','open','number',n.open||''),
+    d => { const obj={...n,id:n.id||uid(),issue:Number(d.issue),sendDate:d.sendDate,subject:d.subject,status:d.status,news:d.news,tool:d.tool,tutorial:d.tutorial,cta:d.cta,subs:d.subs,open:d.open,ex:false}; if(isNew) S.newsletters.push(obj); else Object.assign(S.newsletters.find(x=>x.id===n.id),obj); toast('Issue saved'); },
+    isNew?null:()=>{ S.newsletters=S.newsletters.filter(x=>x.id!==n.id); });
+}
+function chatForm(c){
+  const isNew=!c.id;
+  openModal(isNew?'Add chat / Space':'Edit chat', fld('Name','name','text',c.name||'','required',true)+sel('Day','day',DAYS,c.day||'Tue')+fld('Time','time','text',c.time||'9:00 PM IST')+fld('Hashtag / type','tag','text',c.tag||'',"placeholder='#AIChat or Space'")+`<div></div>`+area('Notes','notes',c.notes||''),
+    d=>{ const obj={...c,id:c.id||uid(),name:d.name,day:d.day,time:d.time,tag:d.tag,notes:d.notes,ex:false}; if(isNew) S.xChats.push(obj); else Object.assign(S.xChats.find(x=>x.id===c.id),obj); }, isNew?null:()=>{ S.xChats=S.xChats.filter(x=>x.id!==c.id); });
+}
+function tweetForm(tw){
+  const isNew=!tw.id;
+  openModal(isNew?'Add tweet to bank':'Edit tweet', area('Tweet (max 280)','text',tw.text||''),
+    d=>{ const obj={...tw,id:tw.id||uid(),text:d.text,status:tw.status||'bank',ex:false}; if(isNew) S.tweets.push(obj); else Object.assign(S.tweets.find(x=>x.id===tw.id),obj); }, isNew?null:()=>{ S.tweets=S.tweets.filter(x=>x.id!==tw.id); });
+}
+function reelForm(r){
+  const isNew=!r.id;
+  openModal(isNew?'New reel':'Edit reel', fld('Title','title','text',r.title||'','required',true)+fld('Hook (first 2 seconds)','hook','text',r.hook||'','',true)+area('Script / shot list','script',r.script||'')+sel('Stage','stage',REEL_STAGES,r.stage||'hook')+fld('Post date','postDate','date',r.postDate||'')+platChecks('platforms',r.platforms||['ig','fb'],['ig','fb','li','th']),
+    d=>{ const obj={...r,id:r.id||uid(),title:d.title,hook:d.hook,script:d.script,stage:d.stage,postDate:d.postDate,platforms:d.platforms||[],ex:false}; if(isNew) S.reels.push(obj); else Object.assign(S.reels.find(x=>x.id===r.id),obj); toast('Reel saved'); }, isNew?null:()=>{ S.reels=S.reels.filter(x=>x.id!==r.id); });
+}
+function metricForm(m){
+  const isNew=!m.id; const last=[...S.metrics].sort((a,b)=>a.week.localeCompare(b.week)).pop();
+  openModal(isNew?'Log this week':'Edit week', fld('Week of (Monday)','week','date',m.week||weekStart(today()),'',true)+PLAT_ORDER.map(p=>fld(PLATFORMS[p].name+(p==='nl'?' subscribers':' followers'),p,'number',m[p]??(last?last[p]:'') )).join(''),
+    d=>{ const obj={...m,id:m.id||uid(),week:weekStart(d.week),ex:false}; PLAT_ORDER.forEach(p=>obj[p]=Number(d[p])||0); const ex=S.metrics.find(x=>x.week===obj.week && x.id!==obj.id); if(ex){ Object.assign(ex,obj,{id:ex.id}); } else if(isNew) S.metrics.push(obj); else Object.assign(S.metrics.find(x=>x.id===m.id),obj); toast('Numbers saved'); }, isNew?null:()=>{ S.metrics=S.metrics.filter(x=>x.id!==m.id); });
+}
+
+/* ============ events ============ */
+document.addEventListener('click', e => {
+  const nb = e.target.closest('[data-tab]'); if(nb){ S.tab = nb.dataset.tab; render(); return; }
+  const th = e.target.closest('[data-theme]'); if(th){ setTheme(th.dataset.theme); return; }
+  const el = e.target.closest('[data-act]'); if(!el) return;
+  const a = el.dataset.act, id = el.dataset.id, t = today();
+  const find = (arr)=>arr.find(x=>x.id===id);
+  switch(a){
+    case 'gotab': S.tab = el.dataset.v; render(); break;
+    case 'toggle': { S.done[t] = S.done[t]||{}; S.done[t][el.dataset.key] = !S.done[t][el.dataset.key]; render(); break; }
+    case 'addpost': e.preventDefault(); postForm({date:el.dataset.date||t, platform:el.dataset.plat||'ig', type:el.dataset.type && POST_TYPES.includes(el.dataset.type)?el.dataset.type:undefined}); break;
+    case 'editpost': e.preventDefault(); postForm(find(S.posts)); break;
+    case 'calnav': S.calWeek = el.dataset.v==='0' ? weekStart(t) : addDays(S.calWeek, Number(el.dataset.v)); render(); break;
+    case 'addidea': ideaForm({}); break;
+    case 'editidea': ideaForm(find(S.ideas)); break;
+    case 'idea-move': { const i=find(S.ideas); const k=clamp(IDEA_STAGES.indexOf(i.stage)+Number(el.dataset.v),0,3); i.stage=IDEA_STAGES[k]; render(); break; }
+    case 'repurpose': repurposeForm(find(S.ideas)); break;
+    case 'addnl': nlForm({sendDate: el.dataset.date}); break;
+    case 'editnl': nlForm(find(S.newsletters)); break;
+    case 'addchat': chatForm({}); break;
+    case 'editchat': chatForm(find(S.xChats)); break;
+    case 'addtweet': tweetForm({}); break;
+    case 'edittweet': tweetForm(find(S.tweets)); break;
+    case 'tweet-used': find(S.tweets).status='used'; render(); break;
+    case 'slot-post': { const s=(S.xslots[t]=S.xslots[t]||[{text:'',posted:false},{text:'',posted:false},{text:'',posted:false}]); const i=Number(el.dataset.i); s[i].posted=!s[i].posted; if(s.every(x=>x.posted)){ S.done[t]=S.done[t]||{}; S.done[t]['d-x-tweets']=true; toast('All 3 tweets done. Checklist updated.'); } render(); break; }
+    case 'slot-pull': { const s=(S.xslots[t]=S.xslots[t]||[{text:'',posted:false},{text:'',posted:false},{text:'',posted:false}]); const b=S.tweets.find(x=>x.status==='bank'); if(b){ s[Number(el.dataset.i)].text=b.text; b.status='used'; render(); } break; }
+    case 'rep': { S.replies[t]=clamp((S.replies[t]||0)+Number(el.dataset.v),0,99); if(S.replies[t]>=10){ S.done[t]=S.done[t]||{}; S.done[t]['d-x-replies']=true; } render(); break; }
+    case 'addreel': reelForm({}); break;
+    case 'editreel': reelForm(find(S.reels)); break;
+    case 'reel-next': { const r=find(S.reels); r.stage=REEL_STAGES[Math.min(4,REEL_STAGES.indexOf(r.stage)+1)]; if(r.stage==='posted'){ for(const p of (r.platforms||[])){ const post=S.posts.find(x=>x.title===r.title && x.platform===p); if(post) post.status='posted'; } } render(); break; }
+    case 'addmetric': metricForm({}); break;
+    case 'editmetric': metricForm(find(S.metrics)); break;
+    case 'export': navigator.clipboard.writeText(JSON.stringify(S)).then(()=>toast('Backup copied')).catch(()=>toast('Copy blocked. Use Download.')); break;
+    case 'download': { const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; l.download=`kn360-backup-${t}.json`; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); break; }
+    case 'import': { try{ const j=JSON.parse($('#importBox').value); if(!j.settings||!j.posts) throw 0; S=j; S.tab='today'; render(); toast('Restored'); }catch(x){ toast('That is not a valid backup'); } break; }
+    case 'clearex': { for(const k of ['ideas','posts','reels','newsletters','xChats','tweets','metrics']) S[k]=S[k].filter(x=>!x.ex); render(); toast('Example items removed'); break; }
+    case 'reset': if(confirm('Reset everything to the starting example? This cannot be undone.')){ S=seed(); render(); } break;
+  }
+});
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-act]'); if(!el) return; const a=el.dataset.act, t=today();
+  if(a==='slot'){ const s=(S.xslots[t]=S.xslots[t]||[{text:'',posted:false},{text:'',posted:false},{text:'',posted:false}]); s[Number(el.dataset.i)].text=el.value; const c=el.parentElement.querySelector('.cnt'); c.textContent=el.value.length+'/280'; c.classList.toggle('over',el.value.length>280); save(); }
+  if(a==='note'){ S.settings.notes=S.settings.notes||{}; S.settings.notes[el.dataset.k]=el.value; save(); }
+  if(a==='goal'){ S.settings.goals[el.dataset.k]=Number(el.value)||0; save(); }
+  if(a==='setting'){ const k=el.dataset.k; S.settings[k]= k==='goalDays'?(Number(el.value)||90):el.value; save(); }
+});
+document.addEventListener('change', e => { const el=e.target.closest('[data-act="setting"]'); if(el) renderNav(); });
+
+/* ============ theme ============ */
+function setTheme(v){ try{ localStorage.setItem('kn360_theme', v); }catch(e){} applyTheme(); }
+function applyTheme(){ let v='system'; try{ v=localStorage.getItem('kn360_theme')||'system'; }catch(e){} if(v==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); document.querySelectorAll('.rail-foot [data-theme]').forEach(b=>b.classList.toggle('on',b.dataset.theme===v)); }
+
+applyTheme();
+render();
+</script>
+
+</body>
+</html>
